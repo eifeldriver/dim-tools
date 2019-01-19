@@ -6,9 +6,14 @@ var this_version        = '0.1';
 var version_file        = 'https://raw.githubusercontent.com/eifeldriver/dim-tools/master/version';
 var loading_starts      = 0;
 var loading_ends        = 0;
+var selector_marker     = '#app';
 var selector_spinner    = '.dim-loading';
+var selector_loading    = '#content .dim-loading';
 var watcher             = null;
 
+var css                 = '';
+
+//------------------------------------------------------------
 
 /**
  * debug function
@@ -46,60 +51,132 @@ function checkForUpdates() {
     xhr.send();
 }
 
-
 /**
  * insert custom CSS
  *
  */
-function insertCss() {
-    var css     =   '' +
-        '';
+function insertCss(css) {
+    _debug('add CSS to the page');
     var style   = document.createElement('STYLE');
     style.innerHTML = css;
     document.querySelector('head').appendChild(style);
 }
 
-//------------------------------------------------------------
-
-function addFactionItemCount() {
-    if (location.href.endsWith('/vendors')) {
-        var vendors = document.querySelectorAll('.vendor-char-items');
-        for (var idx=0; idx<vendors.length; idx++) {
-            var faction = vendors[idx];
-            var cnt     = faction.querySelector('.item-faction').innerText;
-            _debug(faction.querySelector('span > span > span').innerText + ': ' + cnt)
-        }
-    }
+/**
+ * return the first classname of the current context
+ *
+ * @returns {string}
+ */
+function getCurrentContext() {
+    _debug('exec getCurrentContext');
+    var curr_context = document.querySelector('#content > div').className.split(' ')[0];
+    return curr_context;
 }
-
 
 /**
- * simple check for running loading process
+ * store the 1st classname of the current context for usage in the observer
+ *
  */
-function isStillLoading() {
-    // DOM element only exists on running reload
-    return document.querySelectorAll(selector_spinner).length;
+function storeCurrentContext() {
+    var curr_context = document.querySelector('#content > div').className.split(' ')[0];
+    document.querySelector(selector_marker).dataset.context = curr_context;
+    return curr_context;
 }
 
-function waitForReloadStarts() {
-    if (isStillLoading()) {
-        loading_starts = 1;
-        window.clearInterval(watcher);
-        _debug("watcher cleared");
-        watcher = window.setInterval(waitForReloadFinished, 1000);
-        _debug("watcher 'wait for loading finished' started");
-        
+/**
+ * return the stored context
+ * @returns {*}
+ */
+function getStoredContext() {
+    return document.querySelector(selector_marker).dataset.context;
+}
+
+/**
+ * verify current and stored context
+ * if not the same then the context has changed
+ * @returns {boolean}
+ */
+function hasContextChanged() {
+    var changed = false;
+    if (getCurrentContext() != getStoredContext()) {
+        changed = true;
     }
+    return changed;
 }
 
-function waitForReloadFinished() {
-    if (!isStillLoading()) {
-        loading_ends = 1;
+/**
+ * wait after page load of the DIM loading spinner
+ */
+function waitForLoadingFinished() {
+    // _debug('exec waitForLoadingFinished');
+    if (document.querySelector(selector_loading)) {
+        // _debug('still loading ...');
+
+    } else {
+        _debug('loading finished.');
         window.clearInterval(watcher);
-        _debug("watcher cleared");
+        _debug('kill watcher');
+        storeCurrentContext();
+        initDomObserver();
         startDimTools();
     }
 }
+
+/**
+ * init the mutation observer
+ */
+function initDomObserver() {
+    _debug('exec initDomObserver');
+    var div = document.querySelector('#content');
+    if (div) {
+        var observer = new MutationObserver(
+            function(mutations) {
+                // _debug('exec MutationObserver');
+                // clear and set watcher on every mutation event
+                // the timeout is larger then the next event is fired, so the start function doesnt will be called
+                // after the last event the timeout can be reached and the start function will be called
+                if (document.querySelector(selector_loading)) {
+                    _debug('loading ...');
+                    watcher = window.setInterval(waitForLoadingFinished, 1000);
+                    // remove observer so that this code will be exec only one time on changes
+                    this.disconnect();
+                    _debug('kill MutationObserver');
+
+                } else if (hasContextChanged()) {
+                    _debug('new context loaded.');
+                    waitForLoadingFinished();   // direct call to run dim-tools again
+                }
+            }
+        );
+        observer.observe(div,
+            {
+                attributes: true,
+                characterData: true,
+                childList: true,
+                subtree: true,
+                attributeOldValue: true,
+                characterDataOldValue: true
+            }
+        );
+    }
+}
+
+//------------------------------------------------------------
+
+/**
+ * add the faction item count to the collapsable (visible) DOM element
+ */
+function addFactionItemCount() {
+    _debug('exec addFactionItemCount');
+    var vendors = document.querySelectorAll('.vendor-char-items');
+    for (var idx=0; idx<vendors.length; idx++) {
+        var faction = vendors[idx];
+        var cnt     = faction.querySelector('.item-faction').innerText;
+        _debug(faction.querySelector('span > span > span').innerText + ': ' + cnt)
+    }
+}
+
+//------------------------------------------------------------
 
 /**
  * init the script
@@ -109,17 +186,25 @@ function waitForReloadFinished() {
  * 3rd = exec dim-tools
  */
 function initDimTools() {
-    window.clearInterval(watcher);
-    _debug("watcher cleared");
-    watcher = window.setInterval(waitForReloadStarts, 1000);
-    _debug("watcher 'wait for loading starts' started");
+    if (document.querySelector('#app .billboard')) {
+        // need Battle.net login
+        _debug('Need authentification ... Please login!');
+
+    } else {
+        _debug('loading ...');
+        watcher = window.setInterval(waitForLoadingFinished, 1000); // wait 1 second before run
+    }
 }
 
 /**
- * add the tools to the page
+ * exec on any finished DIM loading
  */
 function startDimTools() {
     _debug('DIM Tools started');
+    window.clearTimeout(watcher);
+    _debug('watcher cleared');
+    var context = getCurrentContext();
+    _debug('current context = ' + context);
 }
 
 
