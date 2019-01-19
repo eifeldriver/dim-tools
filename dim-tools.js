@@ -1,7 +1,6 @@
 /**
  * define some vars
  */
-var this_debug          = 1;
 var this_version        = '0.1';
 var version_file        = 'https://raw.githubusercontent.com/eifeldriver/dim-tools/master/version';
 var loading_starts      = 0;
@@ -14,17 +13,6 @@ var watcher             = null;
 var css                 = '';
 
 //------------------------------------------------------------
-
-/**
- * debug function
- */
-function _debug(txt) {
-    if (this_debug) {
-        var d = new Date();
-        var now = [d.getHours(), d.getMinutes(), d.getSeconds(), d.getMilliseconds()].join(':');
-        console.log(now + ': ' + txt);
-    }
-}
 
 /**
  * check Github version with local version
@@ -56,7 +44,6 @@ function checkForUpdates() {
  *
  */
 function insertCss(css) {
-    _debug('add CSS to the page');
     var style   = document.createElement('STYLE');
     style.innerHTML = css;
     document.querySelector('head').appendChild(style);
@@ -68,7 +55,6 @@ function insertCss(css) {
  * @returns {string}
  */
 function getCurrentContext() {
-    _debug('exec getCurrentContext');
     var curr_context = document.querySelector('#content > div').className.split(' ')[0];
     return curr_context;
 }
@@ -110,12 +96,10 @@ function hasContextChanged() {
 function waitForLoadingFinished() {
     // _debug('exec waitForLoadingFinished');
     if (document.querySelector(selector_loading)) {
-        // _debug('still loading ...');
+        // still loading ...
 
     } else {
-        _debug('loading finished.');
         window.clearInterval(watcher);
-        _debug('kill watcher');
         storeCurrentContext();
         initDomObserver();
         startDimTools();
@@ -126,24 +110,17 @@ function waitForLoadingFinished() {
  * init the mutation observer
  */
 function initDomObserver() {
-    _debug('exec initDomObserver');
     var div = document.querySelector('#content');
     if (div) {
         var observer = new MutationObserver(
             function(mutations) {
-                // _debug('exec MutationObserver');
-                // clear and set watcher on every mutation event
-                // the timeout is larger then the next event is fired, so the start function doesnt will be called
-                // after the last event the timeout can be reached and the start function will be called
+                // this function will be called on any DOM changes
                 if (document.querySelector(selector_loading)) {
-                    _debug('loading ...');
                     watcher = window.setInterval(waitForLoadingFinished, 1000);
                     // remove observer so that this code will be exec only one time on changes
                     this.disconnect();
-                    _debug('kill MutationObserver');
 
                 } else if (hasContextChanged()) {
-                    _debug('new context loaded.');
                     waitForLoadingFinished();   // direct call to run dim-tools again
                 }
             }
@@ -167,12 +144,10 @@ function initDomObserver() {
  * add the faction item count to the collapsable (visible) DOM element
  */
 function addFactionItemCount() {
-    _debug('exec addFactionItemCount');
     var vendors = document.querySelectorAll('.vendor-char-items');
     for (var idx=0; idx<vendors.length; idx++) {
         var faction = vendors[idx];
         var cnt     = faction.querySelector('.item-faction').innerText;
-        _debug(faction.querySelector('span > span > span').innerText + ': ' + cnt)
     }
 }
 
@@ -188,10 +163,8 @@ function addFactionItemCount() {
 function initDimTools() {
     if (document.querySelector('#app .billboard')) {
         // need Battle.net login
-        _debug('Need authentification ... Please login!');
 
     } else {
-        _debug('loading ...');
         watcher = window.setInterval(waitForLoadingFinished, 1000); // wait 1 second before run
     }
 }
@@ -200,11 +173,8 @@ function initDimTools() {
  * exec on any finished DIM loading
  */
 function startDimTools() {
-    _debug('DIM Tools started');
     window.clearTimeout(watcher);
-    _debug('watcher cleared');
     var context = getCurrentContext();
-    _debug('current context = ' + context);
 }
 
 
