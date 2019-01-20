@@ -11,7 +11,17 @@ var selector_spinner    = '.dim-loading';
 var selector_loading    = '#content .dim-loading';
 var watcher             = null;
 
-var css                 = '' +
+var actions_css         = '' +
+    '#dim-actions { position:fixed; background:rgba(0, 0, 0, 0.65); padding:5px; z-index:99999; left:50%; ' +
+    '  transform:translate(-50%, 0); }' +
+    '#dim-actions h6 { margin: -5px 0 5px; padding: 0; } ' +
+    '#dim-actions .row {}' +
+    '#dim-actions .row button { font-size:90%; margin:1px; }' +
+    '#dim-actions .row button:hover { background:green; color:#fff; }' +
+    '#dim-actions .row button:active { background:black; }' +
+    '';
+
+var css                 = actions_css +
     '.faction-item-cnt { position:absolute; left:0; top:0; font-style:normal; border:2px solid lightgreen; ' +
     '  border-radius:50%; padding:2px; font-size:12px; color:#fff; background:green; min-width:1em; text-align:center;' +
     '}';
@@ -71,7 +81,7 @@ function insertCss(css) {
  * @returns {string}
  */
 function getCurrentContext() {
-    _debug('exec getCurrentContext');
+    // _debug('exec getCurrentContext');
     var curr_context = document.querySelector('#content > div').className.split(' ')[0];
     return curr_context;
 }
@@ -166,6 +176,43 @@ function initDomObserver() {
 
 //------------------------------------------------------------
 
+function vendorsCollapseAll() {
+    var expanded = document.querySelectorAll('.vendor-char-items .title:not(.collapsed)');
+    expanded.forEach(function (t) { t.click(); });
+}
+
+function vendorsExpandAll() {
+    var collapsed = document.querySelectorAll('.vendor-char-items .title.collapsed');
+    collapsed.forEach(function (t) { t.click(); });
+}
+
+/**
+ * add some new actions for the vendors page
+ */
+function addVendorActions() {
+    // define allowed actions
+    var allowed_actions = {vendorsCollapseAll: vendorsCollapseAll, vendorsExpandAll: vendorsExpandAll};
+    // create actions
+    var html = '' +
+        '<h6>Actions</h6>' +
+        '<div class="row">' +
+            '<button id="vendorsCollapseAll" class="action">collapse</button><button id="vendorsExpandAll" class="action">expand</button>' +
+        '</div>';
+    var div = document.createElement('DIV');
+    div.id = 'dim-actions';
+    div.innerHTML = html.trim();
+    document.querySelector('#content').prepend(div);
+    // bind actions
+    var actions = document.querySelectorAll('#dim-actions .action');
+    actions.forEach(function(elem, idx) {
+        var callback = allowed_actions[elem.id];
+        if (typeof callback === "function") {
+            // function exists and are allowed
+            elem.addEventListener('click', callback);
+        }
+    });
+}
+
 /**
  * add the faction item count to the collapsable (visible) DOM element
  */
@@ -228,6 +275,7 @@ function startDimTools() {
     _debug('current context = ' + context);
     switch (context) {
         case 'vendor':
+            addVendorActions();
             addFactionItemCount();
             break;
         case 'inventory':
