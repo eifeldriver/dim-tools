@@ -11,7 +11,10 @@ var selector_spinner    = '.dim-loading';
 var selector_loading    = '#content .dim-loading';
 var watcher             = null;
 
-var css                 = '';
+var css                 = '' +
+    '.faction-item-cnt { position:absolute; left:0; top:0; font-style:normal; border:2px solid lightgreen; ' +
+    '  border-radius:50%; padding:2px; font-size:12px; color:#fff; background:green; min-width:1em; text-align:center;' +
+    '}';
 
 //------------------------------------------------------------
 
@@ -168,12 +171,29 @@ function initDomObserver() {
  */
 function addFactionItemCount() {
     _debug('exec addFactionItemCount');
-    var vendors = document.querySelectorAll('.vendor-char-items');
-    for (var idx=0; idx<vendors.length; idx++) {
-        var faction = vendors[idx];
-        var cnt     = faction.querySelector('.item-faction').innerText;
-        _debug(faction.querySelector('span > span > span').innerText + ': ' + cnt)
-    }
+    var vendors = document.querySelectorAll('#content > div > .vendor-char-items');
+    // expand all items
+    var collapsed = document.querySelectorAll('.vendor-char-items .title.collapsed');
+    collapsed.forEach(function (t) { t.click(); });
+    // read item count of any NPC
+    vendors.forEach(function(faction, idx) {
+        var npc_name        = faction.querySelector('.title > span > span > span');
+        npc_name            = npc_name ? npc_name.innerText : 'unknown';
+        var vendor_items    = faction.querySelector('.vendor-items');
+        if (vendor_items) {
+            var cnt = vendor_items.querySelector('.item-faction');
+            if (cnt) {
+                cnt = cnt.innerText;
+                var elem = document.createElement('SPAN');
+                elem.className = 'faction-item-cnt';
+                elem.innerText = cnt;
+                faction.prepend(elem);
+                _debug(npc_name + ' = ' + cnt);
+            }
+        }
+    });
+    // restore collapsed or expanded sections
+    collapsed.forEach(function (t) { t.click(); });
 }
 
 //------------------------------------------------------------
@@ -203,8 +223,24 @@ function startDimTools() {
     _debug('DIM Tools started');
     window.clearTimeout(watcher);
     _debug('watcher cleared');
+    insertCss(css);
     var context = getCurrentContext();
     _debug('current context = ' + context);
+    switch (context) {
+        case 'vendor':
+            addFactionItemCount();
+            break;
+        case 'inventory':
+
+            break;
+        case 'progress-page':
+
+            break;
+
+        default:
+
+            break;
+    }
 }
 
 
