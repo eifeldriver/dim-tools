@@ -2,12 +2,9 @@
  * define some vars
  */
 var this_debug          = 1;
-var this_version        = '0.1';
+var this_version        = '0.11';
 var version_file        = 'https://raw.githubusercontent.com/eifeldriver/dim-tools/master/version';
-var loading_starts      = 0;
-var loading_ends        = 0;
 var selector_marker     = '#app';
-var selector_spinner    = '.dim-loading';
 var selector_loading    = '#content .dim-loading';
 var watcher             = null;
 
@@ -29,7 +26,7 @@ var css                 = actions_css +
 //------------------------------------------------------------
 
 /**
- * debug function
+ * debug output function
  */
 function _debug(txt) {
     if (this_debug) {
@@ -76,36 +73,46 @@ function insertCss(css) {
 }
 
 /**
- * return the first classname of the current context
+ * return the first classname as name of the current context
  *
  * @returns {string}
  */
 function getCurrentContext() {
     // _debug('exec getCurrentContext');
-    var curr_context = document.querySelector('#content > div').className.split(' ')[0];
+    var curr_context = document.querySelector('#content > div');
+    if (curr_context) {
+        curr_context = curr_context.className.split(' ')[0];
+    } else {
+        curr_context = 'unknown';
+    }
     return curr_context;
 }
 
 /**
- * store the 1st classname of the current context for usage in the observer
+ * store the name of the current context
  *
  */
 function storeCurrentContext() {
-    var curr_context = document.querySelector('#content > div').className.split(' ')[0];
-    document.querySelector(selector_marker).dataset.context = curr_context;
-    return curr_context;
+    document.querySelector(selector_marker).dataset.context = getCurrentContext();
 }
 
 /**
- * return the stored context
+ * return the name of the stored context
  * @returns {*}
  */
 function getStoredContext() {
-    return document.querySelector(selector_marker).dataset.context;
+    var marker          = document.querySelector(selector_marker);
+    var stored_context  = '';
+    if (marker) {
+        stored_context = marker.dataset.context;
+    } else {
+        stored_context = 'unknown';
+    }
+    return stored_context;
 }
 
 /**
- * verify current and stored context
+ * verify the current and stored context names
  * if not the same then the context has changed
  * @returns {boolean}
  */
@@ -118,7 +125,7 @@ function hasContextChanged() {
 }
 
 /**
- * wait after page load of the DIM loading spinner
+ * wait until the DIM loading process has finished
  */
 function waitForLoadingFinished() {
     // _debug('exec waitForLoadingFinished');
@@ -127,16 +134,29 @@ function waitForLoadingFinished() {
 
     } else {
         _debug('loading finished.');
-        window.clearInterval(watcher);
-        _debug('kill watcher');
-        storeCurrentContext();
-        initDomObserver();
-        startDimTools();
+        if (document.querySelectorAll('#content').length == 0) {
+            // #content not found
+            // do nothing because the next interval will call this function again
+            _debug('unknown context - still waiting ...');
+
+        } else {
+            // all right
+            window.clearInterval(watcher);
+            _debug('kill watcher');
+            storeCurrentContext();
+            initDomObserver();
+            startDimTools();
+        }
     }
 }
 
 /**
- * init the mutation observer
+ * set the mutation observer
+ * The observer will be called on any DOM change inside the #content element.
+ * If the DIM loading element was found, the new interval will be set and kill the observer.
+ * otherwise check if the current context has changed.
+ * Every DOM change will start the interval to check if the DIM loading is finished.
+ * TODO: check if this concept force a high payload (CPU)
  */
 function initDomObserver() {
     _debug('exec initDomObserver');
@@ -145,9 +165,6 @@ function initDomObserver() {
         var observer = new MutationObserver(
             function(mutations) {
                 // _debug('exec MutationObserver');
-                // clear and set watcher on every mutation event
-                // the timeout is larger then the next event is fired, so the start function doesnt will be called
-                // after the last event the timeout can be reached and the start function will be called
                 if (document.querySelector(selector_loading)) {
                     _debug('loading ...');
                     watcher = window.setInterval(waitForLoadingFinished, 1000);
@@ -176,36 +193,50 @@ function initDomObserver() {
 
 //------------------------------------------------------------
 
-function vendorsCollapseAll() {
-    var expanded = document.querySelectorAll('.vendor-char-items .title:not(.collapsed)');
+/**
+ * collapse all expanded vendor sections
+ *
+ */
+function vendorsCollapseAll(expanded) {
+    if (typeof expanded === 'undefined') {
+        // get currently expanded sections
+        expanded = document.querySelectorAll('.vendor-char-items .title:not(.collapsed)');
+    }
     expanded.forEach(function (t) { t.click(); });
+    return expanded;
 }
 
-function vendorsExpandAll() {
-    var collapsed = document.querySelectorAll('.vendor-char-items .title.collapsed');
+/**
+ * expand all collapsed vendor sections
+ */
+function vendorsExpandAll(collapsed) {
+    if (typeof collapsed === 'undefined') {
+        // get currently collapsed sections
+        collapsed = document.querySelectorAll('.vendor-char-items .title.collapsed');
+    }
     collapsed.forEach(function (t) { t.click(); });
+    return collapsed;
 }
 
 /**
  * add some new actions for the vendors page
  */
 function addVendorActions() {
-    // define allowed actions
-    var allowed_actions = {vendorsCollapseAll: vendorsCollapseAll, vendorsExpandAll: vendorsExpandAll};
     // create actions
     var html = '' +
         '<h6>Actions</h6>' +
         '<div class="row">' +
-            '<button id="vendorsCollapseAll" class="action">collapse</button><button id="vendorsExpandAll" class="action">expand</button>' +
+        '<button id="vendorsCollapseAll" class="action">collapse</button><button id="vendorsExpandAll" class="action">expand</button>' +
         '</div>';
-    var div = document.createElement('DIV');
-    div.id = 'dim-actions';
-    div.innerHTML = html.trim();
+    var div         = document.createElement('DIV');
+    div.id          = 'dim-actions';
+    div.innerHTML   = html.trim();
     document.querySelector('#content').prepend(div);
     // bind actions
     var actions = document.querySelectorAll('#dim-actions .action');
     actions.forEach(function(elem, idx) {
-        var callback = allowed_actions[elem.id];
+        // the id attribute is equal to the function name i.e. id="abc" calls on click abc()
+        var callback = window[elem.id];
         if (typeof callback === "function") {
             // function exists and are allowed
             elem.addEventListener('click', callback);
@@ -220,8 +251,7 @@ function addFactionItemCount() {
     _debug('exec addFactionItemCount');
     var vendors = document.querySelectorAll('#content > div > .vendor-char-items');
     // expand all items
-    var collapsed = document.querySelectorAll('.vendor-char-items .title.collapsed');
-    collapsed.forEach(function (t) { t.click(); });
+    var collapsed = vendorsExpandAll();
     // read item count of any NPC
     vendors.forEach(function(faction, idx) {
         var npc_name        = faction.querySelector('.title > span > span > span');
@@ -231,16 +261,16 @@ function addFactionItemCount() {
             var cnt = vendor_items.querySelector('.item-faction');
             if (cnt) {
                 cnt = cnt.innerText;
-                var elem = document.createElement('SPAN');
-                elem.className = 'faction-item-cnt';
-                elem.innerText = cnt;
+                var elem        = document.createElement('SPAN');
+                elem.className  = 'faction-item-cnt';
+                elem.innerText  = cnt;
                 faction.prepend(elem);
                 _debug(npc_name + ' = ' + cnt);
             }
         }
     });
-    // restore collapsed or expanded sections
-    collapsed.forEach(function (t) { t.click(); });
+    // collapsed all temporarly expanded sections
+    vendorsCollapseAll(collapsed);
 }
 
 //------------------------------------------------------------
@@ -248,7 +278,7 @@ function addFactionItemCount() {
 /**
  * init the script
  *
- * 1st = waiting for loading
+ * 1st = wait 1 sec
  * 2nd = wait for loading finished
  * 3rd = exec dim-tools
  */
@@ -297,5 +327,4 @@ function startDimTools() {
 /*
  * init script
  */
-
-initDimTools();
+window.addEventListener('load', initDimTools);
