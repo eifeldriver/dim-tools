@@ -64,14 +64,14 @@ function checkForUpdates() {
                 info.id         = 'dim-tools-update';
                 info.className  = 'flashit';
                 info.innerHTML  = '<span title="Your version = ' + this_version + ' | New version = ' + repo_version + '">*</span>';
-                var btn = document.querySelector('#dim-tools-button');
+                var btn = document.querySelector('#header');
                 btn.appendChild(info);
             }
         } else {
             return null;
         }
     };
-    xhr.send();
+    try { xhr.send(); } catch(err) { _debug('check for updates failed, because: ' + err.message); }
 }
 
 /**
@@ -244,7 +244,7 @@ function addVendorActions() {
     var div         = document.createElement('DIV');
     div.id          = 'dim-actions';
     div.innerHTML   = html.trim();
-    document.querySelector('#content').append(div);
+    document.querySelector('#content').appendChild(div);
     // bind actions
     var actions = document.querySelectorAll('#dim-actions .action');
     actions.forEach(function(elem, idx) {
@@ -266,32 +266,37 @@ function addFactionItemCount() {
     // expand all items
     var collapsed = vendorsExpandAll();
     // read item count of any NPC
+    var level_poly, level_max, level_filled, level_progress;
     factions.forEach(function(faction, idx) {
         var npc_name        = faction.querySelector('.title > span > span > span');
         npc_name            = npc_name ? npc_name.innerText.toLocaleLowerCase() : 'unknown';
         if (vendors[npc_name]) {     // process only selected venodrs
             var vendor_items = faction.querySelector('.vendor-items');
             if (vendor_items) {
-                var level_poly = faction.querySelector('.faction-icon polygon');
+                level_poly = faction.querySelector('.faction-icon polygon');
                 if (level_poly) {   // not every vendor has an progress polygon
-                    var level_max       = parseInt(level_poly.attributes[0].nodeValue);   // get value of stroke-dasharray
-                    var level_filled    = parseInt(level_poly.style['strokeDashoffset']);   // get value of stroke-offset
-                    var level_progress  = level_filled / level_max; // is a % value
-                    var have_tokens     = faction.querySelector('.vendor-currencies .vendor-currency:nth-child(2)');
-                    have_tokens         = have_tokens ? parseInt(have_tokens.innerText) : 0;
-                    if (have_tokens) {   // min 1 token exists
-                        var tokens_max      = vendors[npc_name]['items_per_levelup'];
-                        var tokens_filled   = parseInt(vendors[npc_name]['items_per_levelup'] * level_progress);
-                        if ((tokens_max - tokens_filled - have_tokens) < 0) {    // levelup is possible
-                            var level_ups = parseInt((have_tokens - (tokens_max - tokens_filled)) / tokens_max) + 1;
-                        }
-                        if (level_ups) {    // hide none level_ups
-                            var elem        = document.createElement('SPAN');
-                            elem.className  = 'faction-item-cnt';
-                            elem.innerText  = level_ups;
-                            faction.prepend(elem);
-                            _debug(npc_name + ' = ' + level_ups);
-                        }
+                    level_max       = parseInt(level_poly.attributes[0].nodeValue);   // get value of stroke-dasharray
+                    level_filled    = parseInt(level_poly.style['strokeDashoffset']);   // get value of stroke-offset
+                    level_progress  = level_filled / level_max; // is a % value
+                } else {
+                    // poly element doesnt exists but this is a DIM mistake and
+                    // this script supposed level_progress = 0
+                    level_progress  = 0;
+                }
+                var have_tokens     = faction.querySelector('.vendor-currencies .vendor-currency:nth-child(2)');
+                have_tokens         = have_tokens ? parseInt(have_tokens.innerText) : 0;
+                if (have_tokens) {   // min 1 token exists
+                    var tokens_max      = vendors[npc_name]['items_per_levelup'];
+                    var tokens_filled   = parseInt(vendors[npc_name]['items_per_levelup'] * level_progress);
+                    if ((tokens_max - tokens_filled - have_tokens) < 0) {    // levelup is possible
+                        var level_ups = parseInt((have_tokens - (tokens_max - tokens_filled)) / tokens_max) + 1;
+                    }
+                    if (level_ups) {    // hide none level_ups
+                        var elem        = document.createElement('SPAN');
+                        elem.className  = 'faction-item-cnt';
+                        elem.innerText  = level_ups;
+                        faction.prepend(elem);
+                        _debug(npc_name + ' = ' + level_ups);
                     }
                 }
             }
@@ -329,6 +334,7 @@ function startDimTools() {
     window.clearTimeout(watcher);
     _debug('watcher cleared');
     insertCss(css);
+    // checkForUpdates();
     var context = getCurrentContext();
     _debug('current context = ' + context);
     switch (context) {
