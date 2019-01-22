@@ -2,7 +2,7 @@
  * define some vars
  */
 var this_debug          = 1;
-var this_version        = '0.11';
+var this_version        = '0.12';
 var version_file        = 'https://raw.githubusercontent.com/eifeldriver/dim-tools/master/version';
 var selector_marker     = '#app';
 var selector_loading    = '#content .dim-loading';
@@ -19,9 +19,22 @@ var actions_css         = '' +
     '';
 
 var css                 = actions_css +
-    '.faction-item-cnt { position:absolute; left:0; top:0; font-style:normal; border:2px solid lightgreen; ' +
-    '  border-radius:50%; padding:2px; font-size:12px; color:#fff; background:green; min-width:1em; text-align:center;' +
-    '}';
+    '.faction-item-cnt { position:absolute; left:0; top:0; font-style:normal; border:2px solid #fff; ' +
+    '  border-radius:50%; padding:2px; font-size:14px; color:#fff; background:darkgreen; min-width:1em; text-align:center; }';
+
+var vendors = {
+    'lord saladin'      :   { 'items_per_levelup': 100, 'items_per_levelup_step': 10},
+    'lord shaxx'        :   { 'items_per_levelup': 60,  'items_per_levelup_step': 10},
+    'asher mir'         :   { 'items_per_levelup': 60,  'items_per_levelup_step': 10},
+    'devrim kay'        :   { 'items_per_levelup': 60,  'items_per_levelup_step': 10},
+    'sloane'            :   { 'items_per_levelup': 60,  'items_per_levelup_step': 10},
+    'failsafe'          :   { 'items_per_levelup': 60,  'items_per_levelup_step': 10},
+    'bruder vance'      :   { 'items_per_levelup': 60,  'items_per_levelup_step': 10},
+    'ana bray'          :   { 'items_per_levelup': 100, 'items_per_levelup_step': 10},
+    // 'Commander Zavala'  :   { 'items_per_levelup': 100, 'items_per_levelup_step': 10},
+    // 'Banshee-44'        :   { 'items_per_levelup': 100, 'items_per_levelup_step': 25}
+
+};
 
 //------------------------------------------------------------
 
@@ -231,7 +244,7 @@ function addVendorActions() {
     var div         = document.createElement('DIV');
     div.id          = 'dim-actions';
     div.innerHTML   = html.trim();
-    document.querySelector('#content').prepend(div);
+    document.querySelector('#content').append(div);
     // bind actions
     var actions = document.querySelectorAll('#dim-actions .action');
     actions.forEach(function(elem, idx) {
@@ -245,27 +258,42 @@ function addVendorActions() {
 }
 
 /**
- * add the faction item count to the collapsable (visible) DOM element
+ * calculate the available faction item count based on the vendor currency
  */
 function addFactionItemCount() {
     _debug('exec addFactionItemCount');
-    var vendors = document.querySelectorAll('#content > div > .vendor-char-items');
+    var factions = document.querySelectorAll('#content > div > .vendor-char-items');
     // expand all items
     var collapsed = vendorsExpandAll();
     // read item count of any NPC
-    vendors.forEach(function(faction, idx) {
+    factions.forEach(function(faction, idx) {
         var npc_name        = faction.querySelector('.title > span > span > span');
-        npc_name            = npc_name ? npc_name.innerText : 'unknown';
-        var vendor_items    = faction.querySelector('.vendor-items');
-        if (vendor_items) {
-            var cnt = vendor_items.querySelector('.item-faction');
-            if (cnt) {
-                cnt = cnt.innerText;
-                var elem        = document.createElement('SPAN');
-                elem.className  = 'faction-item-cnt';
-                elem.innerText  = cnt;
-                faction.prepend(elem);
-                _debug(npc_name + ' = ' + cnt);
+        npc_name            = npc_name ? npc_name.innerText.toLocaleLowerCase() : 'unknown';
+        if (vendors[npc_name]) {     // process only selected venodrs
+            var vendor_items = faction.querySelector('.vendor-items');
+            if (vendor_items) {
+                var level_poly = faction.querySelector('.faction-icon polygon');
+                if (level_poly) {   // not every vendor has an progress polygon
+                    var level_max       = parseInt(level_poly.attributes[0].nodeValue);   // get value of stroke-dasharray
+                    var level_filled    = parseInt(level_poly.style['strokeDashoffset']);   // get value of stroke-offset
+                    var level_progress  = level_filled / level_max; // is a % value
+                    var have_tokens     = faction.querySelector('.vendor-currencies .vendor-currency:nth-child(2)');
+                    have_tokens         = have_tokens ? parseInt(have_tokens.innerText) : 0;
+                    if (have_tokens) {   // min 1 token exists
+                        var tokens_max      = vendors[npc_name]['items_per_levelup'];
+                        var tokens_filled   = parseInt(vendors[npc_name]['items_per_levelup'] * level_progress);
+                        if ((tokens_max - tokens_filled - have_tokens) < 0) {    // levelup is possible
+                            var level_ups = parseInt((have_tokens - (tokens_max - tokens_filled)) / tokens_max) + 1;
+                        }
+                        if (level_ups) {    // hide none level_ups
+                            var elem        = document.createElement('SPAN');
+                            elem.className  = 'faction-item-cnt';
+                            elem.innerText  = level_ups;
+                            faction.prepend(elem);
+                            _debug(npc_name + ' = ' + level_ups);
+                        }
+                    }
+                }
             }
         }
     });
