@@ -19,6 +19,14 @@ var actions_css         = '' +
     '';
 
 var css                 = actions_css +
+    // inventory page
+    '.character-text .currency.advice { background: darkgreen; padding: 2px 5px; }' +
+    '.character-text .currency.warning { background: darkorange; padding: 2px 5px; }' +
+    '.character-text .currency.critical { background: orangered; padding: 2px 5px; }' +
+    '.character-text .currency.alert { background: orangered; padding: 2px 5px; }' +
+    // progress page
+
+    // vendors page
     '.faction-item-cnt { position:absolute; left:0; top:0; font-style:normal; border:2px solid #fff; ' +
     '  border-radius:50%; padding:2px; font-size:14px; color:#fff; background:darkgreen; min-width:1em; text-align:center; }';
 
@@ -204,7 +212,34 @@ function initDomObserver() {
     }
 }
 
-//------------------------------------------------------------
+//---------------------- Inventory page --------------------------------------
+
+/**
+ * modify currency to alert at high amount
+ */
+function checkCurrency() {
+    var credits = document.querySelector('.character-box.vault .character-text .currency');
+    if (credits) {
+        var css = '';
+        var max_amount = 100000;
+        filled = parseInt(credits.innerText.trim()) / max_amount;
+        if (filled  > 0.65) {
+            css = ' advice';
+        } else if (filled > 0.80) {
+            css = ' warning';
+        } else if (filled > 0.95) {
+            css = ' critical';
+        } else if (filled > 0.99) {
+            css = ' alert';
+        }
+        credits.className += css;
+    }
+}
+
+//---------------------- Progress page --------------------------------------
+
+
+//---------------------- Vendors page --------------------------------------
 
 /**
  * collapse all expanded vendor sections
