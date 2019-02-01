@@ -2,7 +2,7 @@
  * define some vars
  */
 var this_debug          = 1;
-var this_version        = '0.12';
+var this_version        = '0.2';
 var version_file        = 'https://raw.githubusercontent.com/eifeldriver/dim-tools/master/version';
 var selector_marker     = '#app';
 var selector_loading    = '#content .dim-loading';
@@ -218,19 +218,20 @@ function initDomObserver() {
  * modify currency to alert at high amount
  */
 function checkCurrency() {
+    _debug('exec checkCurrency');
     var credits = document.querySelector('.character-box.vault .character-text .currency');
     if (credits) {
         var css = '';
         var max_amount = 100000;
         filled = parseInt(credits.innerText.trim()) / max_amount;
-        if (filled  > 0.65) {
-            css = ' advice';
-        } else if (filled > 0.80) {
-            css = ' warning';
+        if (filled  > 0.99) {
+            css = ' alert';
         } else if (filled > 0.95) {
             css = ' critical';
-        } else if (filled > 0.99) {
-            css = ' alert';
+        } else if (filled > 0.80) {
+            css = ' warning';
+        } else if (filled > 0.65) {
+            css = ' advice';
         }
         credits.className += css;
     }
@@ -377,8 +378,8 @@ function startDimTools() {
             addVendorActions();
             addFactionItemCount();
             break;
-        case 'inventory':
-
+        case 'inventory-content':
+            checkCurrency();
             break;
         case 'progress-page':
 
