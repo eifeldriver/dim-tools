@@ -9,7 +9,7 @@ var selector_loading    = '#content .dim-loading';
 var watcher             = null;
 
 var actions_css         = '' +
-    '#dim-actions { position:fixed; background:rgba(0, 0, 0, 0.65); padding:5px; z-index:99999; left:50%; ' +
+    '#dim-actions { position:fixed; background:rgba(0, 0, 0, 0.65); padding:5px; z-index:99999; top: 55px; left:50%; ' +
     '  transform:translate(-50%, 0); }' +
     '#dim-actions h6 { margin: -5px 0 5px; padding: 0; } ' +
     '#dim-actions .row {}' +
@@ -246,7 +246,7 @@ function checkCurrency() {
  *
  */
 function vendorsCollapseAll(expanded) {
-    if (typeof expanded === 'undefined') {
+    if (typeof expanded != 'NodeList') {
         // get currently expanded sections
         expanded = document.querySelectorAll('.vendor-char-items .title:not(.collapsed)');
     }
@@ -258,7 +258,7 @@ function vendorsCollapseAll(expanded) {
  * expand all collapsed vendor sections
  */
 function vendorsExpandAll(collapsed) {
-    if (typeof collapsed === 'undefined') {
+    if (typeof expanded != 'NodeList') {
         // get currently collapsed sections
         collapsed = document.querySelectorAll('.vendor-char-items .title.collapsed');
     }
