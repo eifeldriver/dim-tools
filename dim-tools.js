@@ -2,20 +2,20 @@
  * define some vars
  */
 var this_debug          = 1;
-var this_version        = '0.21';
+var this_version        = '0.23';
 var version_file        = 'https://raw.githubusercontent.com/eifeldriver/dim-tools/master/version';
 var selector_marker     = '#app';
 var selector_loading    = '#content .dim-loading';
 var watcher             = null;
 
 var actions_css         = '' +
-    '#dim-actions { position:fixed; background:rgba(0, 0, 0, 0.65); padding:5px; z-index:99999; top: 55px; left:50%; ' +
+    '#dim-vendors-actions { position:fixed; background:rgba(0, 0, 0, 0.65); padding:5px; z-index:99999; top: 55px; left:50%; ' +
     '  transform:translate(-50%, 0); }' +
-    '#dim-actions h6 { margin: -5px 0 5px; padding: 0; } ' +
-    '#dim-actions .row {}' +
-    '#dim-actions .row button { font-size:90%; margin:1px; }' +
-    '#dim-actions .row button:hover { background:green; color:#fff; }' +
-    '#dim-actions .row button:active { background:black; }' +
+    '#dim-vendors-actions h6 { margin: -5px 0 5px; padding: 0; } ' +
+    '#dim-vendors-actions .row {}' +
+    '#dim-vendors-actions .row button { font-size:90%; margin:1px; }' +
+    '#dim-vendors-actions .row button:hover { background:green; color:#fff; }' +
+    '#dim-vendors-actions .row button:active { background:black; }' +
     '';
 
 var css                 = actions_css +
@@ -212,6 +212,21 @@ function initDomObserver() {
     }
 }
 
+/**
+ * remove other actions (vendors, progress, ...) if exists
+ */
+function removeOtherContextActions() {
+    var actions = ['#dim-vendors-actions'];
+    actions.forEach(
+        function(sel) {
+            var elem = document.querySelector(sel);
+            if (elem) {
+                elem.parentNode.removeChild(elem);
+            }
+        }
+    );
+}
+
 //---------------------- Inventory page --------------------------------------
 
 /**
@@ -247,7 +262,7 @@ function checkCurrency() {
  *
  */
 function vendorsCollapseAll(expanded) {
-    if (typeof expanded != 'NodeList') {
+    if (typeof expanded != 'object' || expanded.__proto__ != 'NodeList') {
         // get currently expanded sections
         expanded = document.querySelectorAll('.vendor-char-items .title:not(.collapsed)');
     }
@@ -259,7 +274,7 @@ function vendorsCollapseAll(expanded) {
  * expand all collapsed vendor sections
  */
 function vendorsExpandAll(collapsed) {
-    if (typeof expanded != 'NodeList') {
+    if (typeof collapsed != 'object' || collapsed.__proto__ != 'NodeList') {
         // get currently collapsed sections
         collapsed = document.querySelectorAll('.vendor-char-items .title.collapsed');
     }
@@ -275,22 +290,15 @@ function addVendorActions() {
     var html = '' +
         '<h6>Actions</h6>' +
         '<div class="row">' +
-        '<button id="vendorsCollapseAll" class="action">collapse</button><button id="vendorsExpandAll" class="action">expand</button>' +
+        '<button id="vendors-collapse" data-callback="vendorsCollapseAll" class="action">collapse</button><button id="vendors-expand" data-callback="vendorsExpandAll" class="action">expand</button>' +
         '</div>';
     var div         = document.createElement('DIV');
-    div.id          = 'dim-actions';
+    div.id          = 'dim-vendors-actions';
     div.innerHTML   = html.trim();
     document.querySelector('#content').appendChild(div);
     // bind actions
-    var actions = document.querySelectorAll('#dim-actions .action');
-    actions.forEach(function(elem, idx) {
-        // the id attribute is equal to the function name i.e. id="abc" calls on click abc()
-        var callback = window[elem.id];
-        if (typeof callback === "function") {
-            // function exists and are allowed
-            elem.addEventListener('click', callback);
-        }
-    });
+    document.querySelector('#dim-vendors-actions #vendors-collapse').addEventListener('click', vendorsCollapseAll);
+    document.querySelector('#dim-vendors-actions #vendors-expand').addEventListener('click', vendorsExpandAll);
 }
 
 /**
@@ -373,6 +381,7 @@ function startDimTools() {
     // checkForUpdates();
     var context = getCurrentContext();
     _debug('current context = ' + context);
+    removeOtherContextActions();
     switch (context) {
         case 'vendor':
             addVendorActions();
