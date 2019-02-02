@@ -2,7 +2,7 @@
  * define some vars
  */
 var this_debug          = 1;
-var this_version        = '0.2';
+var this_version        = '0.21';
 var version_file        = 'https://raw.githubusercontent.com/eifeldriver/dim-tools/master/version';
 var selector_marker     = '#app';
 var selector_loading    = '#content .dim-loading';
