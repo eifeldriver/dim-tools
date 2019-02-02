@@ -223,7 +223,7 @@ function checkCurrency() {
     if (credits) {
         var css = '';
         var max_amount = 100000;
-        filled = parseInt(credits.innerText.trim()) / max_amount;
+        var filled = parseInt(credits.innerText.trim()) / max_amount;
         if (filled  > 0.99) {
             css = ' alert';
         } else if (filled > 0.95) {
