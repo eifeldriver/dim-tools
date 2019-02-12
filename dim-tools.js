@@ -1,8 +1,8 @@
 /**
  * define some vars
  */
-var this_debug          = 1;
-var this_version        = '0.23';
+var js_debug            = 1;
+var js_version          = '0.23';
 var version_file        = 'https://raw.githubusercontent.com/eifeldriver/dim-tools/master/version';
 var selector_marker     = '#app';
 var selector_loading    = '#content .dim-loading';
@@ -50,7 +50,7 @@ var vendors = {
  * debug output function
  */
 function _debug(txt) {
-    if (this_debug) {
+    if (js_debug) {
         var d = new Date();
         var now = [d.getHours(), d.getMinutes(), d.getSeconds(), d.getMilliseconds()].join(':');
         console.log(now + ': ' + txt);
@@ -66,12 +66,12 @@ function checkForUpdates() {
     xhr.onload = function() {
         if (xhr.status == 200) {
             var repo_version = xhr.responseText;
-            if (this_version.trim() != repo_version.trim()) {
+            if (js_version.trim() != repo_version.trim()) {
                 // other version available
                 var info        = document.createElement('DIV');
                 info.id         = 'dim-tools-update';
                 info.className  = 'flashit';
-                info.innerHTML  = '<span title="Your version = ' + this_version + ' | New version = ' + repo_version + '">*</span>';
+                info.innerHTML  = '<span title="Your version = ' + js_version + ' | New version = ' + repo_version + '">*</span>';
                 var btn = document.querySelector('#header');
                 btn.appendChild(info);
             }
