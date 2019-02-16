@@ -3,11 +3,11 @@ Custom Javascript to add some features to the Destiny Item Manager website.
 
 # Features
 Inventory page 
-- mark credit background depends on amount !(https://c1.staticflickr.com/8/7885/46038142375_203470c6ff.jpg)
+- mark credit background depends on amount ![pic 1](https://c1.staticflickr.com/8/7885/46038142375_203470c6ff.jpg)
 
 Vendors page
- - add amount of collectable engrams on some vendors !(https://c1.staticflickr.com/8/7807/46227253024_5271115a75_n.jpg)
- - collapse/expand all vendor sections !(https://c1.staticflickr.com/8/7860/46227322894_bc8be24840.jpg)
+ - add amount of collectable engrams on some vendors ![pic 2](https://c1.staticflickr.com/8/7807/46227253024_5271115a75_n.jpg)
+ - collapse/expand all vendor sections ![pic 3](https://c1.staticflickr.com/8/7860/46227322894_bc8be24840.jpg)
 
 # Requirements
 You have to install a browser addon to add custom script to any website.
@@ -25,7 +25,7 @@ Click on the link above and install TM to your favorit browser. After that you s
 
 2. Add a new script 
 Right-click on that new icon in your browser and click on "Create a new script".
-![pic1](https://c1.staticflickr.com/8/7844/46390822204_603ee56e06.jpg)
+![pic 4](https://c1.staticflickr.com/8/7844/46390822204_603ee56e06.jpg)
 
 3. Copy source code
 All the script logic is placed in one single file. Your find it here in this repository.
