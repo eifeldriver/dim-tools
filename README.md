@@ -1,4 +1,4 @@
-# Flickr Tools
+# dim-tools
 Custom Javascript to add some features to the Destiny Item Manager website.
 
 # Features
