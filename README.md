@@ -1,45 +1,44 @@
-# DIM Tools
-Javascript to add some features to the Destiny Item Manager (DIM)
+# Flickr Tools
+Custom Javascript to add some features to the Destiny Item Manager website.
 
-# Description
-This script add ...
+# Features
+Inventory page 
+- mark credit background depends on amount !(https://c1.staticflickr.com/8/7885/46038142375_203470c6ff.jpg)
+
+Vendors page
+ - add amount of collectable engrams on some vendors !(https://c1.staticflickr.com/8/7807/46227253024_5271115a75_n.jpg)
+ - collapse/expand all vendor sections !(https://c1.staticflickr.com/8/7860/46227322894_bc8be24840.jpg)
 
 # Requirements
-To run this script at DIM page, you have to install a browser addon for custom script execution.
+You have to install a browser addon to add custom script to any website.
 
-For example TampaMonkey:
-* Chrome : https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo
-* Opera : https://addons.opera.com/de/extensions/details/tampermonkey-beta/
-* Firefox : https://addons.mozilla.org/de/firefox/addon/tampermonkey/
+I recommend Tampermonkey:
+* [Tampermonkey for Chrome](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)
+* [Tampermonkey for Opera](https://addons.opera.com/de/extensions/details/tampermonkey-beta/)
+* [Tampermonkey for Firefox](https://addons.mozilla.org/de/firefox/addon/tampermonkey/)
 
-In the following text I use TM as shortcut for TampaMonkey.
+# Get started
+In this tutorial I use "TM" as shortcut for the word "Tampermonkey".
 
-* install the addon
-* go to the DIM page 
-* click right top on the TM icon. 
-* Select "add new script".
-* copy the raw Javascript code from 'dim-tools.js' 
-* inside the new TM script, search for the comment line  **// Your code here...**
-* replace this comment with the the copied code
-* save it 
+1. Install the addon
+Click on the link above and install TM to your favorit browser. After that you see the TM-Icon right top.
 
-Finaly you see this script:
-````javascript
-    // ==UserScript==
-    // @name         New Userscript
-    // @namespace    http://tampermonkey.net/
-    // @version      0.1
-    // @description  try to take over the world!
-    // @author       You
-    // @match        https://app.destinyitemmanager.com/index.html
-    // @grant        none
-    // ==/UserScript==
-    
-    (function() {
-        'use strict';
-    
-        ...THE DIM-TOOLS-CODE...
-    })();
-````
+2. Add a new script 
+Right-click on that new icon in your browser and click on "Create a new script".
+![pic1](https://c1.staticflickr.com/8/7844/46390822204_603ee56e06.jpg)
+
+3. Copy source code
+All the script logic is placed in one single file. Your find it here in this repository.
+You have to copy the raw source code and put it into the new created script inside TM.
+[open the RAW view of the source code](https://raw.githubusercontent.com/eifeldriver/dim-tools/master/dim-tools.js)
+
+4. Save and test it
+Save the copied code inside TM with the shortcut CTRL+S or via TM-menu "File - Save to disk".
+Now call the DIM website to see if it works.
+[Try my Flickr-page to test the copy-icon](https://app.destinyitemmanager.com/index.html)
+
+# Final
 
 Now, after any reload of DIM page, the script will be execute automatically.
+
+
