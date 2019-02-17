@@ -38,6 +38,7 @@ You have to copy the raw source code and put it into the new created script insi
 4. **Save and test it**
 Save the copied code inside TM with the shortcut CTRL+S or via TM-menu "File - Save to disk".
 Now call the DIM website to see if it works.
+
 [Call the DIM webpage to test](https://app.destinyitemmanager.com/index.html)
 
 # Final
